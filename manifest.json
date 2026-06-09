@@ -1,0 +1,22 @@
+{
+  "name": "M A F I A : Detective Game",
+  "short_name": "MAFIA",
+  "description": "밤마다 누군가는 움직이고, 아침마다 누군가는 거짓말을 합니다. 범인을 찾아내세요.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050607",
+  "theme_color": "#0c0f11",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}

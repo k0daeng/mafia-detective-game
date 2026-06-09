@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M A F I A</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#0c0f11" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+</head>
+<body>
+  <main class="app">
+    <div class="game-window">
+      <div class="game-header">
+        <div class="title-block">
+          <h1>M A F I A</h1>
+          <div class="top-controls">
+            <button id="mobile-info-button" class="mobile-info-button" onclick="showStatusModal()">수사 정보</button>
+            <button id="settings-button" class="settings-button" onclick="showSettingsModal()" aria-label="설정">⚙</button>
+          </div>
+        </div>
+        <div class="status-block">
+          <div id="status"></div>
+          <div id="mini-map" class="mini-map"></div>
+          <div id="npc-list" class="npc-list"></div>
+          <div id="case-notebook" class="case-notebook"></div>
+        </div>
+      </div>
+
+      <div class="output-window">
+        <div id="location-context" class="location-npcs"></div>
+        <div id="scene"></div>
+        <div class="choice-panel">
+          <div id="actions"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div id="news-modal" class="modal">
+    <div class="modal-content newspaper-content">
+      <h2>속보</h2>
+      <p id="news-modal-message"></p>
+      <button class="secondary" onclick="hideNewsModal()">닫기</button>
+    </div>
+  </div>
+
+  <div id="notebook-modal" class="modal">
+    <div class="modal-content notebook-modal-content">
+      <h2>수사 수첩</h2>
+      <div id="notebook-modal-body"></div>
+      <button class="secondary" onclick="hideNotebookModal()">닫기</button>
+    </div>
+  </div>
+
+  <div id="status-modal" class="modal">
+    <div class="modal-content status-modal-content">
+      <h2>수사 정보</h2>
+      <div id="status-modal-body"></div>
+      <button class="secondary" onclick="hideStatusModal()">닫기</button>
+    </div>
+  </div>
+
+  <div id="settings-modal" class="modal">
+    <div class="modal-content settings-modal-content">
+      <h2>설정</h2>
+      <div class="setting-row">
+        <label>
+          <input id="bgm-enabled" type="checkbox" checked onchange="updateAudioSettings()" />
+          배경음
+        </label>
+        <input id="bgm-volume" type="range" min="0" max="100" value="32" oninput="updateAudioSettings()" />
+      </div>
+      <div class="setting-row">
+        <label>
+          <input id="sfx-enabled" type="checkbox" checked onchange="updateAudioSettings()" />
+          효과음
+        </label>
+        <input id="sfx-volume" type="range" min="0" max="100" value="32" oninput="updateAudioSettings()" />
+      </div>
+      <button class="secondary" onclick="hideSettingsModal()">닫기</button>
+    </div>
+  </div>
+
+  <div id="resume-modal" class="modal">
+    <div class="modal-content status-modal-content">
+      <h2>이어하기</h2>
+      <p>이전 수사 기록이 남아 있습니다.</p>
+      <button class="secondary" onclick="resumeSavedGame()">이어하기</button>
+      <button class="secondary" onclick="startNewGameFromResume()">새 사건 시작</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js")
+          .then((reg) => console.log("Service Worker registered.", reg))
+          .catch((err) => console.log("Service Worker registration failed.", err));
+      });
+    }
+  </script>
+</body>
+</html>
