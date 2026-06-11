@@ -1,4 +1,4 @@
-const CACHE_NAME = "mafia-detective-v18";
+const CACHE_NAME = "mafia-detective-v19";
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,6 +10,7 @@ const ASSETS = [
   "./music/fail.mp3",
   "./music/click.mp3",
   "./music/typing.mp3",
+  "./img/캐릭터/캐릭터.png",
   "./icon-192.png",
   "./icon-512.png",
   "./manifest.json"

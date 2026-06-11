@@ -197,6 +197,8 @@ const state = {
   log: [],
   sceneText: "",
   lastRenderedScene: "",
+  activeNpcId: null,
+  pendingActiveNpcId: null,
   lastNightLocations: {},
   lastNightTraces: {},
   investigationFocus: {},
@@ -672,7 +674,12 @@ function setSceneText(text) {
   if (!scene) return;
   if (sceneTypingTimer) clearTimeout(sceneTypingTimer);
   stopTypingSoundTimer();
-  scene.innerHTML = "<p></p>";
+  scene.innerHTML = "";
+  const activeNpc = getActiveSceneNpc();
+  if (activeNpc) {
+    scene.insertAdjacentHTML("beforeend", getNpcPortraitHtml(activeNpc, "large"));
+  }
+  scene.insertAdjacentHTML("beforeend", "<p></p>");
   const paragraph = scene.querySelector("p");
   let index = 0;
   if (audioState.sfxEnabled && audioState.unlocked) {
@@ -836,6 +843,7 @@ function showInquiryMenu() {
 
   const options = npcs.map((npc, idx) => ({
     label: `${idx + 1}. ${npc.name} - ${npc.role}`,
+    npcId: npc.id,
     action: () => showPersonInquiryMenu(npc.id),
   }));
   options.push({ label: "0. 돌아가기", action: () => setMainMenu() });
@@ -854,7 +862,7 @@ function showPersonInquiryMenu(npcId) {
     { label: "0. 돌아가기", action: () => setMainMenu() },
   ];
 
-  updateScene(`${npc.name}, ${npc.role}.\n\n${npc.trait}`);
+  updateNpcScene(npcId, `${npc.name}, ${npc.role}.\n\n${npc.trait}`);
   setMenu(`${npc.name}에게 무엇을 묻겠습니까?`, options);
 }
 
@@ -868,6 +876,7 @@ function showNpcOptions(type) {
 
   const options = npcs.map((npc, index) => ({
     label: `${index + 1}. ${npc.name}`,
+    npcId: npc.id,
     action: () => {
       if (type === "rumor") askRumor(npc.id);
       else if (type === "rumorAlibi") askRumorAlibi(npc.id);
@@ -1242,6 +1251,40 @@ function bootGame() {
 function updateScene(description) {
   state.sceneText = description;
   state.lastRenderedScene = "";
+  state.activeNpcId = state.pendingActiveNpcId || null;
+}
+
+function updateNpcScene(npcId, description) {
+  state.sceneText = description;
+  state.lastRenderedScene = "";
+  state.activeNpcId = npcId;
+}
+
+function getNpcPortraitIndex(npcId) {
+  const index = Number(String(npcId).replace("npc_", ""));
+  return Number.isInteger(index) && index >= 0 ? index : 0;
+}
+
+function getNpcPortraitStyle(npcId) {
+  const index = getNpcPortraitIndex(npcId);
+  const col = index % 5;
+  const row = Math.floor(index / 5);
+  const x = col === 0 ? 0 : col * 25;
+  const y = row === 0 ? 0 : 100;
+  return `--portrait-x: ${x}%; --portrait-y: ${y}%;`;
+}
+
+function getNpcPortraitHtml(npc, size = "small") {
+  return `
+    <div class="npc-portrait npc-portrait-${size}" style="${getNpcPortraitStyle(npc.id)}" aria-label="${escapeHtml(npc.name)} portrait">
+      <span></span>
+    </div>
+  `;
+}
+
+function getActiveSceneNpc() {
+  if (!state.activeNpcId) return null;
+  return state.npcs.find(npc => npc.id === state.activeNpcId) || null;
 }
 
 function getMapHtml() {
@@ -2588,12 +2631,20 @@ function render() {
 
   state.menu.options.forEach(option => {
     const item = document.createElement("div");
-    item.className = "chat-option";
-    item.textContent = option.label;
+    item.className = option.npcId ? "chat-option npc-option" : "chat-option";
+    if (option.npcId) {
+      const npc = state.npcs.find(person => person.id === option.npcId);
+      if (npc) item.insertAdjacentHTML("beforeend", getNpcPortraitHtml(npc, "thumb"));
+    }
+    const label = document.createElement("span");
+    label.textContent = option.label;
+    item.appendChild(label);
     item.onclick = () => {
       unlockAudio();
       playClickSound();
+      state.pendingActiveNpcId = option.npcId || state.activeNpcId || null;
       option.action();
+      state.pendingActiveNpcId = null;
     };
     actions.appendChild(item);
   });

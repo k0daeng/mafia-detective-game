@@ -403,6 +403,33 @@ button.npc-name:hover {
   overflow-y: auto;
 }
 
+.npc-portrait {
+  flex: 0 0 auto;
+  overflow: hidden;
+  background-image: url("img/캐릭터/캐릭터.png");
+  background-repeat: no-repeat;
+  background-size: 500% 200%;
+  background-position: var(--portrait-x) var(--portrait-y);
+  border: 1px solid rgba(196, 217, 204, 0.22);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.28);
+}
+
+.npc-portrait-large {
+  width: min(240px, 42vw);
+  aspect-ratio: 1 / 1;
+  float: left;
+  margin: 0 18px 12px 0;
+  border-radius: 6px;
+  background-color: rgba(245, 247, 244, 0.92);
+}
+
+.npc-portrait-thumb {
+  width: 42px;
+  height: 42px;
+  border-radius: 5px;
+  background-color: rgba(245, 247, 244, 0.92);
+}
+
 #scene p {
   width: 100%;
   max-width: 100%;
@@ -462,6 +489,17 @@ button {
     background 130ms ease,
     border-color 130ms ease,
     transform 130ms ease;
+}
+
+.chat-option.npc-option {
+  min-height: 56px;
+  gap: 12px;
+  padding: 7px 10px;
+}
+
+.chat-option.npc-option span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .chat-option:hover,
