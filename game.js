@@ -131,6 +131,15 @@ const SEARCH_SPOTS_BY_LOCATION = {
   ],
 };
 
+const LOCATION_BACKGROUNDS = {
+  pharmacy: "bg1.png",
+  square: "bg2.png",
+  bar: "bg3.png",
+  alley: "bg4.png",
+  market: "bg5.png",
+  harbor: "bg6.png",
+};
+
 const LOCATIONS = {
   square: {
     name: "광장",
@@ -199,6 +208,7 @@ const state = {
   lastRenderedScene: "",
   activeNpcId: null,
   pendingActiveNpcId: null,
+  sceneMode: null,
   lastNightLocations: {},
   lastNightTraces: {},
   investigationFocus: {},
@@ -535,6 +545,98 @@ function getFakeAlibiLocation(actualLocation) {
   return pickRandom(candidates);
 }
 
+function getNpcAlibiQuote(npc, locationId) {
+  const locName = LOCATIONS[locationId].name;
+  const alibiTemplates = {
+    "빅터 로웰": {
+      square: "어젯밤 광장에 있었습니다. 분수대 소리를 세고 있었죠.",
+      pharmacy: "어젯밤 약국 쪽에 용무가 있어 가 있었습니다.",
+      bar: "어젯밤 술집에 있었습니다. 소음 속에서 혼자 계산을 하고 있었죠.",
+      alley: "어젯밤 골목길에 있었습니다. 어둠 속에서 벽돌 수를 세며 걸었습니다.",
+      market: "어젯밤 시장에 있었습니다. 거래 장부를 정리할 일이 있었습니다.",
+      harbor: "어젯밤 항구에 있었습니다. 화물 선적량을 기록하느라 밤을 샜습니다.",
+    },
+    "엘리엇 그레이": {
+      square: "어젯밤 광장에 있었습니다. 차가운 분수대 냄새가 났던 기억이 나는군요.",
+      pharmacy: "어젯밤 제 약국을 지키고 있었습니다. 약품 냄새가 진동을 했지요.",
+      bar: "어젯밤 술집 구석에 있었습니다. 독한 술 냄새와 시끄러운 발소리가 섞여 있더군요.",
+      alley: "어젯밤 골목길을 지나고 있었습니다. 눅눅한 흙 냄새가 났습니다.",
+      market: "어젯밤 시장에 있었습니다. 낮에 상인들이 남긴 과일 향이 남아 있더군요.",
+      harbor: "어젯밤 항구에 가 있었습니다. 비릿한 짠내와 습기 때문에 불쾌했습니다.",
+    },
+    "마르코 벨리니": {
+      square: "어젯밤엔 바람 좀 쐬려고 광장을 서성였습니다. 싱거운 밤이었죠.",
+      pharmacy: "어젯밤 약국에 있었습니다. 요즘 몸이 영 예전 같지 않아서 영양제라도 사러 갔었죠.",
+      bar: "어젯밤 제 술집을 보고 있었죠. 손님들 뒤치다꺼리하느라 바빴습니다.",
+      alley: "어젯밤엔 골목길에 잠깐 서 있었습니다. 바람이 차서 금방 들어왔지만요.",
+      market: "어젯밤엔 시장 근처를 배회했습니다. 혹시 늦게까지 문을 연 야식 가판대가 있나 해서요.",
+      harbor: "어젯밤엔 머리나 식힐 겸 항구 쪽 부두에 나가 있었습니다.",
+    },
+    "로렌 밀러": {
+      square: "어젯밤 광장에 서 있었습니다. 사람들의 옷자락이 바람에 나부끼는 소리를 들었습니다.",
+      pharmacy: "어젯밤 약국에 가 있었습니다. 약사님의 코트 실밥이 뜯어져 있던 게 기억나는군요.",
+      bar: "어젯밤엔 술집에 있었습니다. 독한 술에 젖은 거친 모직 옷 냄새가 가득하더군요.",
+      alley: "어젯밤 골목길을 걷고 있었습니다. 좁고 차가운 벽 사이로 스치는 바람 소리가 좋았습니다.",
+      market: "어젯밤 시장에 있었습니다. 낮에 쓰던 빈 천막 천을 수거하려고 잠시 들렀지요.",
+      harbor: "어젯밤 항구 쪽에 있었습니다. 젖은 밧줄 섬유 냄새가 진하게 베어 나왔습니다.",
+    },
+    "아멜리아 브룩": {
+      square: "어젯밤엔 잠이 오지 않아 광장 벤치에 앉아 조용히 책을 읽고 있었습니다.",
+      pharmacy: "어젯밤 약국에 들렀습니다. 머리가 조금 아파서 진통제가 필요했거든요.",
+      bar: "어젯밤엔 술집에 잠시 들어가 앉아 있었습니다. 소란스러운 사람들을 조용히 관찰했지요.",
+      alley: "어젯밤엔 오래된 기억을 짚어가듯 골목길을 천천히 걸었습니다.",
+      market: "어젯밤엔 시장 공터를 산책했습니다. 밤의 시장은 책방의 밤처럼 차분하더군요.",
+      harbor: "어젯밤엔 항구의 등대를 바라보며 부두 곁에 서 있었습니다.",
+    },
+    "토마스 리드": {
+      square: "어젯밤 광장에 있었어요! 새벽 배달을 준비하기 전에 종탑 근처에 가 있었거든요.",
+      pharmacy: "어젯밤 약국 근처를 지나갔어요. 약사님이 불을 늦게 끄시더라고요.",
+      bar: "어젯밤엔 당근 술집에 있었죠! 재미있는 소문이 있나 귀를 기울이고 있었습니다.",
+      alley: "어젯밤엔 지름길인 골목길로 뛰어다녔습니다. 밤의 골목은 좀 오싹하지만요.",
+      market: "어젯밤엔 시장 가판대 구석에 걸터앉아 있었습니다. 야시장 구경도 좀 할 겸 해서요.",
+      harbor: "어젯밤엔 물건이 들어오는 걸 보려고 항구 부두 쪽에 가 있었습니다.",
+    },
+    "세실 하워드": {
+      square: "어젯밤엔 광장에 있었습니다... 무서워서 분수대 뒤 그늘에 몸을 숨기고 있었어요.",
+      pharmacy: "어젯밤 약국에 숨어 있었습니다... 문 틈새로 들어오는 바람 소리에도 깜짝깜짝 놀랐지요.",
+      bar: "어젯밤엔 사람들이 많은 술집 구석자리에 웅크려 앉아 있었습니다. 거기가 덜 무섭거든요...",
+      alley: "어젯밤엔 어두운 골목길에 갇혀 있었습니다. 발소리가 날 때마다 너무 무서웠습니다.",
+      market: "어젯밤엔 시장의 빈 상자 더미 뒤에 숨어 있었습니다. 바깥이 너무 소란스러워서요...",
+      harbor: "어젯밤엔 항구 창고 옆 밧줄 더미 틈에 숨어 있었습니다... 밤 안개가 무서웠어요.",
+    },
+    "그레이스 모건": {
+      square: "어젯밤 광장에 있었습니다. 말 없는 사람들의 침묵이 더 크게 느껴지는 밤이었죠.",
+      pharmacy: "어젯밤 약국에 들렀습니다. 약사님과 짧은 인사를 나누었지요.",
+      bar: "어젯밤엔 술집에서 손님들의 수다와 그 이면의 기색을 살피고 있었습니다.",
+      alley: "어젯밤엔 조용히 골목길을 걷고 있었습니다. 밤이 되면 다들 정직해지니까요.",
+      market: "어젯밤 시장에 잠깐 다녀왔습니다. 여관에 쓸 식재료를 수령하려 했지요.",
+      harbor: "어젯밤엔 밤바람을 쐬러 항구 부두로 내려가 웅성이는 소리를 듣고 있었습니다.",
+    },
+    "오스카 베일": {
+      square: "어젯밤 광장에 마차를 세워두고 손님을 기다리며 말고삐를 쥐고 있었습니다.",
+      pharmacy: "어젯밤 약국에 약을 지으러 다녀왔습니다. 다리가 영 뻐근해서 말입니다.",
+      bar: "어젯밤엔 고단한 하루를 마감하고 술집 구석에서 맥주나 한잔 들이켜고 있었습니다.",
+      alley: "어젯밤엔 마차가 지나갈 수 없는 좁은 골목길에 발자국을 남기며 걸어 다녔지.",
+      market: "어젯밤엔 시장 뒤편에서 짐을 내리고 마차 바퀴 자국을 지우며 쉬고 있었습니다.",
+      harbor: "어젯밤엔 항구에서 짐 실을 준비를 하며 진흙 바닥을 살피고 있었습니다.",
+    },
+    "노라 클라인": {
+      square: "어젯밤 광장에 있었습니다. 달빛을 받아 하얗게 빛나는 분수대를 보았어요.",
+      pharmacy: "어젯밤 약국에 가 있었습니다. 꽃 향기보다 강한 알싸한 약 냄새를 맡으면서요.",
+      bar: "어젯밤엔 시끌벅적한 술집에 어울리지 않게 꽃 몇 송이를 안고 앉아 있었습니다.",
+      alley: "어젯밤엔 어두운 골목길에 핀 야생화의 흔적을 따라 조용히 걸었습니다.",
+      market: "어젯밤 시장에 가 있었습니다. 오늘 아침 팔 꽃 자루들을 정리하느라 밤이 늦었거든요.",
+      harbor: "어젯밤엔 밤 안개가 깔린 항구 부두 근처에서 바다 냄새를 맡고 있었어요.",
+    }
+  };
+
+  const templates = alibiTemplates[npc.name];
+  if (templates && templates[locationId]) {
+    return templates[locationId];
+  }
+  return `저는 어젯밤 ${locName}에 있었습니다.`;
+}
+
 function getCaseRoute(caseLog) {
   return [caseLog.start, caseLog.crime, caseLog.escape].filter(Boolean);
 }
@@ -676,10 +778,32 @@ function setSceneText(text) {
   stopTypingSoundTimer();
   scene.innerHTML = "";
   const activeNpc = getActiveSceneNpc();
-  if (activeNpc) {
+  if (activeNpc && state.sceneMode === "accuse") {
+    scene.insertAdjacentHTML("beforeend", `
+      <div class="accuse-scene">
+        ${getNpcPortraitHtml(activeNpc, "accuse")}
+        <p></p>
+      </div>
+    `);
+  } else if (activeNpc) {
     scene.insertAdjacentHTML("beforeend", getNpcPortraitHtml(activeNpc, "large"));
+  } else {
+    // 인물 탐문이 아닌 일반 장소 상황일 때, 장소 이미지를 텍스트 위에 큼직하게 띄움
+    const isGameActive = state.npcs && state.npcs.length > 0 && (state.day > 0 || state.log.length > 1);
+    if (isGameActive) {
+      const bgImage = LOCATION_BACKGROUNDS[state.playerLocation];
+      if (bgImage) {
+        scene.insertAdjacentHTML("beforeend", `
+          <div class="scene-location-image-wrapper">
+            <img src="img/배경/${bgImage}" class="scene-location-image" alt="${escapeHtml(LOCATIONS[state.playerLocation].name)}">
+          </div>
+        `);
+      }
+    }
   }
-  scene.insertAdjacentHTML("beforeend", "<p></p>");
+  if (state.sceneMode !== "accuse") {
+    scene.insertAdjacentHTML("beforeend", "<p></p>");
+  }
   const paragraph = scene.querySelector("p");
   let index = 0;
   if (audioState.sfxEnabled && audioState.unlocked) {
@@ -706,10 +830,13 @@ function renderLog() {
 const LOG_MAX_ENTRIES = 6;
 
 function addLog(message) {
+  const currentNpcId = state.activeNpcId;
   if (!state.sceneText) {
-    updateScene(message);
+    if (currentNpcId) updateNpcScene(currentNpcId, message);
+    else updateScene(message);
   } else {
-    updateScene(`${state.sceneText}\n\n${message}`);
+    if (currentNpcId) updateNpcScene(currentNpcId, `${state.sceneText}\n\n${message}`);
+    else updateScene(`${state.sceneText}\n\n${message}`);
   }
 }
 
@@ -787,7 +914,7 @@ function setMainMenu() {
   options.push(
     { label: `${optionNumber++}. 탐문`, action: showInquiryMenu },
     { label: `${optionNumber++}. 수색`, action: searchLocation },
-    { label: `${optionNumber++}. 사건 수첩`, action: showCaseAnalysis },
+    { label: `${optionNumber++}. 사건 수첩`, action: showNotebookModal },
     { label: `${optionNumber++}. 탐색 완료`, action: completeSearch },
   );
 
@@ -863,6 +990,21 @@ function showPersonInquiryMenu(npcId) {
   ];
 
   updateNpcScene(npcId, `${npc.name}, ${npc.role}.\n\n${npc.trait}`);
+  setMenu(`${npc.name}에게 무엇을 묻겠습니까?`, options);
+}
+
+function setPersonInquiryMenu(npcId) {
+  const npc = state.npcs.find(n => n.id === npcId);
+  if (!npc) { setMainMenu(); return; }
+
+  const options = [
+    { label: "1. 소문", action: () => { askRumor(npcId); } },
+    { label: "2. 알리바이", action: () => { askAlibi(npcId); } },
+    { label: "3. 인상착의", action: () => { inspectClothing(npcId); } },
+    { label: "4. 소지품 검사", action: () => { inspectItems(npcId); } },
+    { label: "0. 돌아가기", action: () => setMainMenu() },
+  ];
+
   setMenu(`${npc.name}에게 무엇을 묻겠습니까?`, options);
 }
 
@@ -942,8 +1084,8 @@ function askRumor(npcId) {
   const refusalKey = `${state.day}:${npcId}`;
   const alreadyAskedRumor = Boolean(state.rumorRefusals[refusalKey]);
   if (alreadyAskedRumor) {
-    updateScene(`${npc.name}에게 다시 소문을 묻습니다.\n\n${npc.name}: “방금 말했잖습니까. 같은 질문을 반복한다고 제 기억이 바뀌지는 않습니다.”\n\n상대가 불쾌해하며 대화를 끊었습니다.`);
-    render();
+    updateNpcScene(npcId, `${npc.name}에게 다시 소문을 묻습니다.\n\n${npc.name}: “방금 말했잖습니까. 같은 질문을 반복한다고 제 기억이 바뀌지는 않습니다.”\n\n상대가 불쾌해하며 대화를 끊었습니다.`);
+    setPersonInquiryMenu(npcId);
     return;
   }
 
@@ -980,17 +1122,19 @@ function askRumor(npcId) {
     };
   }
 
-  if (evidence && hasEvidence(evidence.kind, evidence.text, evidence.day ?? state.day)) {
-    updateScene(`${npc.name}에게 소문을 듣습니다.\n\n${quote}\n\n핵심 내용은 이미 수첩에 기록된 단서와 같습니다. 새로운 정보는 얻지 못했습니다.`);
-    render();
+  const isDuplicate = evidence && hasEvidence(evidence.kind, evidence.text, evidence.day ?? state.day);
+
+  if (isDuplicate) {
+    updateNpcScene(npcId, `${npc.name}에게 소문을 듣습니다.\n\n${quote}\n\n핵심 내용은 이미 수첩에 기록된 단서와 같습니다. 새로운 정보는 얻지 못했습니다.`);
+    setPersonInquiryMenu(npcId);
     return;
   }
 
-  updateScene(`${npc.name}에게 소문을 듣습니다.\n\n${quote}`);
+  updateNpcScene(npcId, `${npc.name}에게 소문을 듣습니다.\n\n${quote}`);
   if (evidence) rememberEvidence(evidence.kind, evidence.text, evidence);
 
-  addLog("소문을 들었습니다.");
-  useAction();
+  addLog(`${npc.name}에게 소문을 들었습니다.`);
+  setPersonInquiryMenu(npcId);
 }
 
 function askRumorAlibi(npcId) {
@@ -1000,13 +1144,13 @@ function askRumorAlibi(npcId) {
   if (Math.random() > 0.5) {
     quote = `${npc.name}: “그런 걸 왜 물어보죠?”`;
   } else if (npc.id === state.mafia.id && latestCase) {
-    quote = `${npc.name}: “저는 어젯밤 ${LOCATIONS[latestCase.falseAlibi].name}에 있었습니다.”`;
+    quote = `${npc.name}: “${getNpcAlibiQuote(npc, latestCase.falseAlibi)}”`;
   } else {
-    quote = `${npc.name}: “저는 어젯밤 ${LOCATIONS[npc.location].name}에 있었습니다.”`;
+    quote = `${npc.name}: “${getNpcAlibiQuote(npc, npc.location)}”`;
   }
 
-  updateScene(`${npc.name}의 알리바이를 묻습니다.\n\n${quote}`);
-  useAction();
+  updateNpcScene(npcId, `${npc.name}의 알리바이를 묻습니다.\n\n${quote}`);
+  setPersonInquiryMenu(npcId);
 }
 
 function showTitleMenu() {
@@ -1252,12 +1396,14 @@ function updateScene(description) {
   state.sceneText = description;
   state.lastRenderedScene = "";
   state.activeNpcId = state.pendingActiveNpcId || null;
+  state.sceneMode = null;
 }
 
 function updateNpcScene(npcId, description) {
   state.sceneText = description;
   state.lastRenderedScene = "";
   state.activeNpcId = npcId;
+  if (state.sceneMode !== "accuse") state.sceneMode = null;
 }
 
 function getNpcPortraitIndex(npcId) {
@@ -1265,19 +1411,11 @@ function getNpcPortraitIndex(npcId) {
   return Number.isInteger(index) && index >= 0 ? index : 0;
 }
 
-function getNpcPortraitStyle(npcId) {
-  const index = getNpcPortraitIndex(npcId);
-  const col = index % 5;
-  const row = Math.floor(index / 5);
-  const x = col === 0 ? 0 : col * 25;
-  const y = row === 0 ? 0 : 100;
-  return `--portrait-x: ${x}%; --portrait-y: ${y}%;`;
-}
-
 function getNpcPortraitHtml(npc, size = "small") {
+  const imageNumber = getNpcPortraitIndex(npc.id) + 1;
   return `
-    <div class="npc-portrait npc-portrait-${size}" style="${getNpcPortraitStyle(npc.id)}" aria-label="${escapeHtml(npc.name)} portrait">
-      <span></span>
+    <div class="npc-portrait npc-portrait-${size}">
+      <img src="img/캐릭터/${imageNumber}.png" alt="${escapeHtml(npc.name)}">
     </div>
   `;
 }
@@ -1368,7 +1506,7 @@ function renderCaseNotebook() {
     .length;
 
   notebook.innerHTML = `
-    <button class="notebook-trigger" onclick="showNotebookModal()">
+    <button type="button" class="notebook-trigger" onclick="showNotebookModal()">
       <span>수사 수첩</span>
       <small>단서 ${evidenceCount}개 · 확인 ${checkedCount}명</small>
     </button>
@@ -1442,11 +1580,140 @@ function getNotebookHtml() {
   `;
 }
 
+function getNotebookMaxDay() {
+  const evidenceDays = state.notebook.evidence.map(evidence => evidence.day || 1);
+  const suspectDays = Object.values(state.notebook.suspects).flatMap(note => [
+    ...(note.alibis || []).map(item => item.day || 1),
+    ...(note.traces || []).map(item => item.day || 1),
+  ]);
+  return Math.max(1, state.day || 1, ...evidenceDays, ...suspectDays);
+}
+
+function getNotebookPageDay() {
+  const maxDay = getNotebookMaxDay();
+  const pageDay = state.notebookPageDay || state.day || 1;
+  return Math.min(Math.max(1, pageDay), maxDay);
+}
+
+function getNotebookSuspectAlibiHtml(pageDay) {
+  return state.suspects.map(npc => {
+    const note = state.notebook.suspects[npc.id] || {};
+    const alibis = (note.alibis || []).filter(item => (item.day || 1) === pageDay);
+    const parts = [];
+    if (alibis.length) {
+      parts.push(`알리바이 ${alibis.map(item => LOCATIONS[item.location].name).join(" / ")}`);
+    } else if (note.alibi && (note.alibi.day || 1) === pageDay) {
+      parts.push(`알리바이 ${LOCATIONS[note.alibi.location].name}`);
+    } else {
+      parts.push("알리바이 미확인");
+    }
+    if (note.clothing) {
+      parts.push(`인상착의 ${note.clothing.join(", ")}`);
+    }
+    if (note.items) {
+      parts.push(`소지품 ${note.items.join(", ")}`);
+    }
+    return `<li><strong>${escapeHtml(npc.name)}</strong><span>${escapeHtml(parts.join(" / "))}</span></li>`;
+  }).join("") || "<li><span>아직 의심 표시한 인물이 없습니다.</span></li>";
+}
+
+function getNotebookPageHtml() {
+  const pageDay = getNotebookPageDay();
+  const clueEvidence = state.notebook.evidence.filter(evidence =>
+    ["clothing", "item", "movement"].includes(evidence.kind)
+  );
+  const evidenceHtml = clueEvidence.length
+    ? clueEvidence.map(evidence => `<li><span>${escapeHtml(evidence.text)}</span></li>`).join("")
+    : "<li><span>아직 기록된 단서가 없습니다.</span></li>";
+
+  const contentLines = state.caseLogs
+    .filter(caseLog => caseLog.day === pageDay && caseLog.bodyFound)
+    .map(caseLog => {
+      const victim = state.npcs.find(npc => npc.id === caseLog.victimId);
+      const victimName = victim?.name || caseLog.victimName || "피해자";
+      return `${LOCATIONS[caseLog.crime].name}에서 ${victimName} 발견`;
+    });
+  if (!contentLines.length) contentLines.push("조사 기록을 정리 중입니다.");
+  const contentHtml = contentLines.map(line => `<li><span>${escapeHtml(line)}</span></li>`).join("");
+
+  const suspectNotes = Object.entries(state.notebook.suspects)
+    .map(([npcId, note]) => ({
+      npc: state.npcs.find(person => person.id === npcId),
+      note,
+    }))
+    .filter(entry => entry.npc && entry.note);
+
+  const suspectHtml = suspectNotes.map(({ npc, note }) => {
+    const parts = [];
+    const alibis = (note.alibis || []).filter(item => (item.day || 1) === pageDay);
+    const traces = (note.traces || []).filter(item => (item.day || 1) === pageDay);
+    if (alibis.length) {
+      parts.push(`알리바이 ${alibis.map(item => LOCATIONS[item.location].name).join(" / ")}`);
+    }
+    if (traces.length) {
+      parts.push(`흔적 ${traces.map(item => item.trace).join(", ")}`);
+    }
+    if (!alibis.length && note.alibi && (note.alibi.day || 1) === pageDay) {
+      parts.push(`알리바이 ${LOCATIONS[note.alibi.location].name}`);
+    }
+    if (note.clothing) parts.push(`복장 ${note.clothing.join(", ")}`);
+    if (note.items) parts.push(`소지품 ${note.items.join(", ")}`);
+    return `<li><strong>${escapeHtml(npc.name)}</strong><span>${escapeHtml(parts.join(" / ") || "해당 날짜 기록 없음")}</span></li>`;
+  }).join("") || "<li><span>아직 기록된 인물이 없습니다.</span></li>";
+
+  return `
+    <div class="notebook-page-label">${pageDay}일차</div>
+    <ul class="notebook-day-content">${contentHtml}</ul>
+    <div class="notebook-section">
+      <div class="notebook-label">찾은 단서</div>
+      <ul>${evidenceHtml}</ul>
+    </div>
+    <div class="notebook-section">
+      <div class="notebook-label">의심 인물목록</div>
+      <ul>${getNotebookSuspectAlibiHtml(pageDay)}</ul>
+    </div>
+  `;
+}
+
+function getNotebookBackgroundSrc() {
+  const maxDay = getNotebookMaxDay();
+  const pageDay = getNotebookPageDay();
+  if (maxDay <= 1) return "img/case_notebook.png";
+  if (pageDay <= 1) return "img/case_notebook_1.png";
+  if (pageDay >= maxDay) return "img/case_notebook_3.png";
+  return "img/case_notebook_2.png";
+}
+
+function renderNotebookPage() {
+  const body = document.getElementById("notebook-modal-body");
+  const background = document.querySelector("#notebook-modal .notebook-bg-img");
+  if (!body) return;
+  if (background) {
+    background.src = getNotebookBackgroundSrc();
+  }
+  body.innerHTML = getNotebookPageHtml();
+}
+
+function showNextNotebookPage() {
+  const maxDay = getNotebookMaxDay();
+  const currentDay = getNotebookPageDay();
+  state.notebookPageDay = currentDay >= maxDay ? 1 : currentDay + 1;
+  renderNotebookPage();
+}
+
+function showPreviousNotebookPage() {
+  const maxDay = getNotebookMaxDay();
+  const currentDay = getNotebookPageDay();
+  state.notebookPageDay = currentDay <= 1 ? maxDay : currentDay - 1;
+  renderNotebookPage();
+}
+
 function showNotebookModal() {
   const modal = document.getElementById("notebook-modal");
   const body = document.getElementById("notebook-modal-body");
   if (!modal || !body) return;
-  body.innerHTML = getNotebookHtml();
+  state.notebookPageDay = getNotebookPageDay();
+  renderNotebookPage();
   modal.classList.add("active");
 }
 
@@ -1930,6 +2197,9 @@ function getSuspectAnalysisRows() {
 }
 
 function showCaseAnalysis() {
+  showNotebookModal();
+  return;
+
   if (state.analysisReturnScene === null) {
     state.analysisReturnScene = state.sceneText;
   }
@@ -1989,6 +2259,7 @@ function getResultSheet(type) {
 }
 
 function finishGame(type) {
+  state.sceneMode = null;
   state.endingType = type;
   state.endedAt = Date.now();
   state.gameOver = true;
@@ -2023,8 +2294,8 @@ function askAlibi(npcId) {
   const npc = state.npcs.find(n => n.id === npcId);
   const refusalKey = `${state.day}:${npcId}`;
   if (state.alibiRefusals[refusalKey]) {
-    updateScene(`${npc.name}에게 다시 알리바이를 묻습니다.\n\n${npc.name}: "이미 말한 알리바이입니다. 같은 밤에 제 위치가 두 번 바뀌지는 않습니다."`);
-    setMainMenu();
+    updateNpcScene(npcId, `${npc.name}에게 다시 알리바이를 묻습니다.\n\n${npc.name}: "이미 말한 알리바이입니다. 같은 밤에 제 위치가 두 번 바뀌지는 않습니다."`);
+    setPersonInquiryMenu(npcId);
     return;
   }
   state.alibiRefusals[refusalKey] = true;
@@ -2037,36 +2308,50 @@ function askAlibi(npcId) {
     const latestCase = state.caseLogs[state.caseLogs.length - 1];
     if (npc.id === state.mafia.id && latestCase) {
       alibiLocation = latestCase.falseAlibi;
-      quote = `${npc.name}: “저는 어젯밤 ${LOCATIONS[alibiLocation].name}에 있었습니다.”`;
+      quote = `${npc.name}: “${getNpcAlibiQuote(npc, alibiLocation)}”`;
     } else if (state.liarIds.includes(npc.id)) {
       const actualLocation = state.lastNightLocations[npc.id] || npc.location;
       alibiLocation = getFakeAlibiLocation(actualLocation);
-      quote = `${npc.name}: “저는 어젯밤 ${LOCATIONS[alibiLocation].name}에 있었습니다.”`;
+      quote = `${npc.name}: “${getNpcAlibiQuote(npc, alibiLocation)}”`;
     } else {
       alibiLocation = state.lastNightLocations[npc.id] || npc.location;
-      quote = `${npc.name}: “저는 어젯밤 ${LOCATIONS[alibiLocation].name}에 있었습니다.”`;
+      quote = `${npc.name}: “${getNpcAlibiQuote(npc, alibiLocation)}”`;
     }
   }
 
-  updateScene(`${npc.name}에게 어젯밤 알리바이를 묻습니다.\n\n${quote}`);
+  // 중복 여부 사전 체크
+  let isDuplicate = false;
+  let alibiObj = null;
   if (alibiLocation) {
     const note = ensureSuspectNote(npcId);
-    const alibi = {
+    alibiObj = {
       day: state.day,
       location: alibiLocation,
       text: `${state.day}일차 증언: ${LOCATIONS[alibiLocation].name}`,
     };
-    if (note && note.alibis.some(item => item.day === alibi.day && item.location === alibi.location)) {
-      updateScene(`${npc.name}에게 어젯밤 알리바이를 묻습니다.\n\n${quote}\n\n이미 같은 알리바이가 수첩에 기록되어 있습니다. 새로운 정보는 얻지 못했습니다.`);
-      render();
-      return;
+    if (note && note.alibis.some(item => item.day === alibiObj.day && item.location === alibiObj.location)) {
+      isDuplicate = true;
     }
-    if (note && !note.alibis.some(item => item.day === alibi.day && item.location === alibi.location)) {
-      note.alibis.push(alibi);
-    }
-    rememberSuspectInfo(npcId, { alibi });
   }
-  useAction();
+
+  if (isDuplicate) {
+    updateNpcScene(npcId, `${npc.name}에게 알리바이를 묻습니다.\n\n${quote}\n\n이미 같은 알리바이가 수첩에 기록되어 있습니다. 새로운 정보는 얻지 못했습니다.`);
+    setPersonInquiryMenu(npcId);
+    return;
+  }
+
+  updateNpcScene(npcId, `${npc.name}에게 알리바이를 묻습니다.\n\n${quote}`);
+
+  if (alibiLocation && alibiObj) {
+    const note = ensureSuspectNote(npcId);
+    if (note && !note.alibis.some(item => item.day === alibiObj.day && item.location === alibiObj.location)) {
+      note.alibis.push(alibiObj);
+    }
+    rememberSuspectInfo(npcId, { alibi: alibiObj });
+  }
+
+  addLog(`${npc.name}의 알리바이를 들었습니다.`);
+  setPersonInquiryMenu(npcId);
 }
 
 const CLOTHES_MAP = {
@@ -2423,23 +2708,23 @@ function inspectClothing(npcId) {
 
   if (roll < 0.6) {
     rememberSuspectTrace(npcId, traceInfo);
-    updateScene(`${npc.name}의 인상착의를 살펴봅니다.\n\n${traceText}`);
+    updateNpcScene(npcId, `${npc.name}의 인상착의를 살펴봅니다.\n\n${traceText}`);
   } else if (roll < 0.9) {
     rememberSuspectInfo(npcId, { clothing: npc.clothing });
-    updateScene(`${npc.name}의 인상착의를 살펴봅니다.\n\n${clothingText}`);
+    updateNpcScene(npcId, `${npc.name}의 인상착의를 살펴봅니다.\n\n${clothingText}`);
   } else {
     rememberSuspectInfo(npcId, { clothing: npc.clothing });
     rememberSuspectTrace(npcId, traceInfo);
-    updateScene(`${npc.name}의 인상착의를 살펴봅니다.\n\n${clothingText}\n\n${traceText}`);
+    updateNpcScene(npcId, `${npc.name}의 인상착의를 살펴봅니다.\n\n${clothingText}\n\n${traceText}`);
   }
-  useAction();
+  setPersonInquiryMenu(npcId);
 }
 
 function inspectItems(npcId) {
   const npc = state.npcs.find(n => n.id === npcId);
   rememberSuspectInfo(npcId, { items: npc.items });
-  updateScene(`${npc.name}의 소지품을 확인합니다.\n\n${npc.name}의 소지품: ${npc.items.join(", ")}`);
-  useAction();
+  updateNpcScene(npcId, `${npc.name}의 소지품을 확인합니다.\n\n${npc.name}의 소지품: ${npc.items.join(", ")}`);
+  setPersonInquiryMenu(npcId);
 }
 
 function getWrongAccusationEndingLines(npc) {
@@ -2499,6 +2784,7 @@ function getSuccessAccusationEndingLines(npc) {
 }
 
 function startAccusationSequence(type, npc) {
+  state.sceneMode = "accuse";
   state.musicSuppressed = true;
   stopAllMusic();
 
@@ -2514,18 +2800,21 @@ function startAccusationSequence(type, npc) {
     : getWrongAccusationEndingLines(npc);
 
   state.continueQueue = commonLines.map(line => () => {
-    updateScene(line);
+    state.sceneMode = "accuse";
+    updateNpcScene(npc.id, line);
     render();
   });
   state.continueQueue.push(() => {
+    state.sceneMode = "accuse";
     state.musicSuppressed = false;
     state.endingType = type;
     updateMusicForPhase();
-    updateScene(revealLines[0]);
+    updateNpcScene(npc.id, revealLines[0]);
     render();
   });
   state.continueQueue.push(...revealLines.slice(1).map(line => () => {
-    updateScene(line);
+    state.sceneMode = "accuse";
+    updateNpcScene(npc.id, line);
     render();
   }));
   state.continueQueue.push(() => finishGame(type));
@@ -2577,6 +2866,30 @@ function render() {
     const hasBodyHere = state.caseLogs.some(c => c.crime === state.playerLocation && c.bodyFound);
     if (hasBodyHere) sceneEl.classList.add('dark');
     else sceneEl.classList.remove('dark');
+
+    const activeNpc = getActiveSceneNpc();
+    if (activeNpc) sceneEl.classList.add('talking');
+    else sceneEl.classList.remove('talking');
+    if (state.sceneMode === "accuse") sceneEl.classList.add('accusing');
+    else sceneEl.classList.remove('accusing');
+
+    // 게임 시작(오프닝 스토리 종료 및 첫 장소 선택 이후) 후에 배경 이미지를 매핑하여 적용합니다.
+    const isGameActive = state.npcs && state.npcs.length > 0 && (state.day > 0 || state.log.length > 1);
+    if (state.sceneMode === "accuse") {
+      sceneEl.style.backgroundImage = "none";
+    } else if (isGameActive) {
+      const bgImage = LOCATION_BACKGROUNDS[state.playerLocation];
+      if (bgImage) {
+        sceneEl.style.backgroundImage = `linear-gradient(rgba(3, 4, 4, 0.88), rgba(3, 4, 4, 0.88)), url('img/배경/${bgImage}')`;
+        sceneEl.style.backgroundSize = "cover";
+        sceneEl.style.backgroundPosition = "center";
+        sceneEl.style.backgroundRepeat = "no-repeat";
+      } else {
+        sceneEl.style.backgroundImage = "none";
+      }
+    } else {
+      sceneEl.style.backgroundImage = "none";
+    }
   }
 
   renderNpcList();
@@ -2642,7 +2955,7 @@ function render() {
     item.onclick = () => {
       unlockAudio();
       playClickSound();
-      state.pendingActiveNpcId = option.npcId || state.activeNpcId || null;
+      state.pendingActiveNpcId = option.npcId || null;
       option.action();
       state.pendingActiveNpcId = null;
     };

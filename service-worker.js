@@ -1,4 +1,4 @@
-const CACHE_NAME = "mafia-detective-v19";
+const CACHE_NAME = "mafia-detective-v32";
 const ASSETS = [
   "./",
   "./index.html",
@@ -10,7 +10,26 @@ const ASSETS = [
   "./music/fail.mp3",
   "./music/click.mp3",
   "./music/typing.mp3",
-  "./img/캐릭터/캐릭터.png",
+  "./img/캐릭터/1.png",
+  "./img/캐릭터/2.png",
+  "./img/캐릭터/3.png",
+  "./img/캐릭터/4.png",
+  "./img/캐릭터/5.png",
+  "./img/캐릭터/6.png",
+  "./img/캐릭터/7.png",
+  "./img/캐릭터/8.png",
+  "./img/캐릭터/9.png",
+  "./img/캐릭터/10.png",
+  "./img/case_notebook.png",
+  "./img/case_notebook_1.png",
+  "./img/case_notebook_2.png",
+  "./img/case_notebook_3.png",
+  "./img/배경/bg1.png",
+  "./img/배경/bg2.png",
+  "./img/배경/bg3.png",
+  "./img/배경/bg4.png",
+  "./img/배경/bg5.png",
+  "./img/배경/bg6.png",
   "./icon-192.png",
   "./icon-512.png",
   "./manifest.json"

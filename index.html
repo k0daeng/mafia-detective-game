@@ -48,9 +48,13 @@
 
   <div id="notebook-modal" class="modal">
     <div class="modal-content notebook-modal-content">
-      <h2>수사 수첩</h2>
-      <div id="notebook-modal-body"></div>
-      <button class="secondary" onclick="hideNotebookModal()">닫기</button>
+      <img src="img/case_notebook.png" class="notebook-bg-img" alt="사건수첩">
+      <div class="notebook-inner-content">
+        <div id="notebook-modal-body"></div>
+      </div>
+      <button type="button" class="notebook-close-hitbox" onclick="hideNotebookModal()" aria-label="수첩 닫기"></button>
+      <button type="button" class="notebook-prev-button" onclick="showPreviousNotebookPage()" aria-label="이전 날짜 수첩"></button>
+      <button type="button" class="notebook-next-button" onclick="showNextNotebookPage()" aria-label="다음 날짜 수첩"></button>
     </div>
   </div>
 

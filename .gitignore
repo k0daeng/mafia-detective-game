@@ -2,3 +2,7 @@
 node_modules/
 .netlify/
 .DS_Store
+*.psd
+img/배경/*
+!img/배경/bg*.png
+img/캐릭터/캐릭터.png
